@@ -1,0 +1,307 @@
+# ==========================================================
+# SERVER CONFIGURATION
+# ==========================================================
+server:
+  port: 8083
+  forward-headers-strategy: framework
+
+  servlet:
+    context-path: /payment
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
+  tomcat:
+    connection-timeout: 30000
+    max-connections: 200
+    threads:
+      max: 50
+      min-spare: 5
+
+
+# ==========================================================
+# SPRING BOOT CORE CONFIGURATION
+# ==========================================================
+spring:
+
+  # ----------------------------------------------------------
+  # APPLICATION INFO
+  # ----------------------------------------------------------
+  application:
+    name: moment-forever-payment
+
+
+  # ----------------------------------------------------------
+  # SERVICE DISCOVERY - CONSUL
+  # ----------------------------------------------------------
+  cloud:
+    consul:
+      host: ${CONSUL_HOST:localhost}
+      port: 8500
+      discovery:
+        enabled: ${CONSUL_DISCOVERY_ENABLED:true}
+        register: ${CONSUL_DISCOVERY_ENABLED:true}
+        fail-fast: ${CONSUL_FAIL_FAST:false}
+        service-name: ${spring.application.name}
+        health-check-path: /payment/actuator/health
+        health-check-interval: 10s
+        instance-id: ${spring.application.name}:${random.value}
+        prefer-ip-address: true
+        deregister-after: 1m
+
+
+  # ----------------------------------------------------------
+  # DATABASE - POSTGRESQL
+  # ----------------------------------------------------------
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:5434/moment_forever_payment?options=-c%20timezone%3DUTC
+    username: postgres
+    password: groote
+    driver-class-name: org.postgresql.Driver
+
+  # ----------------------------------------------------------
+  # HIKARI CONNECTION POOL
+  # ----------------------------------------------------------
+    hikari:
+      pool-name: MomentForeverPayment-HikariPool
+      connection-timeout: 30000
+      maximum-pool-size: 20
+      minimum-idle: 5
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      connection-test-query: SELECT 1
+      auto-commit: false
+
+
+  # ----------------------------------------------------------
+  # JPA / HIBERNATE
+  # ----------------------------------------------------------
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc:
+          batch_size: 20
+          order_inserts: true
+          order_updates: true
+        query:
+          in_clause_parameter_padding: true
+        id:
+          new_generator_mappings: true
+
+
+  # ----------------------------------------------------------
+  # KAFKA CONFIGURATION
+  # ----------------------------------------------------------
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      properties:
+        enable.idempotence: true
+        max.in.flight.requests.per.connection: 5
+        retries: 3
+
+    consumer:
+      group-id: payment-service-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+        spring.json.type.mapping: >
+          payment-requested:com.forvmom.MomentForeverPayment.events.PaymentRequestedEvent,
+          payment-processed:com.forvmom.MomentForeverPayment.events.PaymentProcessedEvent,
+          payment-failed:com.forvmom.MomentForeverPayment.events.PaymentFailedEvent
+      enable-auto-commit: false
+
+
+  # ----------------------------------------------------------
+  # JACKSON CONFIG
+  # ----------------------------------------------------------
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+      indent-output: true
+    deserialization:
+      fail-on-unknown-properties: false
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: UTC
+    default-property-inclusion: non_null
+
+
+  # ----------------------------------------------------------
+  # QUARTZ SCHEDULER
+  # ----------------------------------------------------------
+  quartz:
+    job-store-type: ${QUARTZ_JOB_STORE_TYPE:jdbc}
+    jdbc:
+      initialize-schema: ${QUARTZ_INITIALIZE_SCHEMA:never}
+    properties:
+      org:
+        quartz:
+          scheduler:
+            instanceName: paymentScheduler
+            instanceId: AUTO
+          jobStore:
+            driverDelegateClass: org.quartz.impl.jdbcjobstore.PostgreSQLDelegate
+            useProperties: false
+            tablePrefix: QRTZ_
+            misfireThreshold: 60000
+          threadPool:
+            class: org.quartz.simpl.SimpleThreadPool
+            threadCount: 5
+            threadPriority: 5
+
+
+# ==========================================================
+# LOGGING
+# ==========================================================
+logging:
+  level:
+    com.forvmom.MomentForeverPayment: DEBUG
+    org.springframework.kafka: INFO
+    org.quartz: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: ./logs/payment-service.log
+    max-size: 10MB
+    max-history: 30
+
+
+# ==========================================================
+# CUSTOM APPLICATION CONFIG
+# ==========================================================
+app:
+  base-url: http://localhost:8082
+  environment: ${ENVIRONMENT:development}
+
+
+# ==========================================================
+# PAYMENT SERVICE SPECIFIC CONFIGURATION
+# ==========================================================
+payment:
+  # Processing settings
+  processing:
+    simulate-failure-rate: 10          # Percentage of payments to randomly fail (0-100)
+    processing-time-ms: 500             # Simulated payment processing time in ms
+
+  # Retry configuration
+  retry:
+    max-retries: 5
+    incoming:
+      grace-period-minutes: 2
+      interval-minutes: 2
+    outgoing:
+      grace-period-minutes: 1
+      interval-seconds: 30
+
+  # Cleanup configuration
+  cleanup:
+    enabled: true
+    interval-hours: 24
+    batch-size: 1000
+    incoming:
+      hours-to-keep: 24
+    outgoing:
+      hours-to-keep: 24
+
+  # Gateway configuration (for real payment integration)
+  gateway:
+    provider: stripe
+    api-key: ${PAYMENT_GATEWAY_API_KEY:sk_test_51UKH2N2NxMDmPEizkpA0a7bXzszQnnASL3Z7RQwe47XcvTP7Q0z6J1q8KEzM5FLu4aigPVCIu1WDFFCl0ei5RV8E00osXQ0xyw}
+    webhook-secret: ${PAYMENT_GATEWAY_WEBHOOK_SECRET:whsec_fe0f6c7578bbec4864bd6b16800a0c2b962ea7a34d4e85440fea42783e5eb921}
+    success-url: ${PAYMENT_SUCCESS_URL:http://localhost:8082/payment/success?session_id={CHECKOUT_SESSION_ID}}
+    cancel-url: ${PAYMENT_CANCEL_URL:http://localhost:8082/payment/cancel}
+    timeout-seconds: 30
+    retry-attempts: 3
+
+
+# ==========================================================
+# ACTUATOR
+# ==========================================================
+#management:
+#  endpoints:
+#    web:
+#      exposure:
+#        include: health,info,metrics,prometheus
+#      base-path: /actuator
+#  endpoint:
+#    health:
+#      show-details: always
+#      probes:
+#        enabled: true
+#    metrics:
+#      enabled: true
+#    prometheus:
+#      enabled: true
+#  metrics:
+#    export:
+#      prometheus:
+#        enabled: true
+#  server:
+#    port: 8083  # Separate port for metrics (optional)
+#    address: 127.0.0.1
+
+
+# ==========================================================
+# SWAGGER / OPENAPI
+# =========================================================
+
+
+# ==========================================================
+# CUSTOM KAFKA TOPICS
+# ==========================================================
+kafka:
+  topics:
+    payment-requested: topic_payment_requested
+    payment-initiated: topic_payment_initiated
+    payment-processed: topic_payment_confirmed
+    payment-failed: topic_payment_failed
+
+
+# ==========================================================
+# ALERTING CONFIGURATION
+# ==========================================================
+alert:
+  enabled: true
+  slack:
+    webhook-url: ${SLACK_WEBHOOK_URL:}
+    channel: "#payment-alerts"
+  email:
+    enabled: false
+    recipients: ops@forvmom.com
+  pagerduty:
+    enabled: false
+    integration-key: ${PAGERDUTY_KEY:}
+
+
+# ==========================================================
+# MONITORING & METRICS
+# ==========================================================
+monitoring:
+  dead-letter:
+    alert-threshold: 5  # Alert if more than 5 dead letters in an hour
+  processing-time:
+    slow-threshold-ms: 5000  # Alert if payment takes longer than 5 seconds
+
+# ==========================================================
+# SWAGGER / OPENAPI
+# ==========================================================
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    url: /v3/api-docs
+    persist-authorization: true
+  api-docs:
+    path: /v3/api-docs
