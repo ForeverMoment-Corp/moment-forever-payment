@@ -50,8 +50,6 @@ public class StripePaymentProcessor implements PaymentStrategy {
         if (inboundPaymentEvent instanceof PaymentRequestedEvent) {
             PaymentRequestedEvent requestedEvent = (PaymentRequestedEvent) inboundPaymentEvent;
             payment.setAmount(requestedEvent.getGrandTotal());
-            // TODO: hardcoded for now, later will be removed
-            payment.setAmount(BigDecimal.valueOf(51000.1D));
             payment.setCurrency(requestedEvent.getCurrency());
         }
 

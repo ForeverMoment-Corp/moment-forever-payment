@@ -219,8 +219,8 @@ payment:
   # Gateway configuration (for real payment integration)
   gateway:
     provider: stripe
-    api-key: ${PAYMENT_GATEWAY_API_KEY:sk_test_51UKH2N2NxMDmPEizkpA0a7bXzszQnnASL3Z7RQwe47XcvTP7Q0z6J1q8KEzM5FLu4aigPVCIu1WDFFCl0ei5RV8E00osXQ0xyw}
-    webhook-secret: ${PAYMENT_GATEWAY_WEBHOOK_SECRET:whsec_fe0f6c7578bbec4864bd6b16800a0c2b962ea7a34d4e85440fea42783e5eb921}
+    api-key: ${PAYMENT_GATEWAY_API_KEY:}
+    webhook-secret: ${PAYMENT_GATEWAY_WEBHOOK_SECRET:}
     success-url: ${PAYMENT_SUCCESS_URL:http://localhost:8082/payment/success?session_id={CHECKOUT_SESSION_ID}}
     cancel-url: ${PAYMENT_CANCEL_URL:http://localhost:8082/payment/cancel}
     timeout-seconds: 30
