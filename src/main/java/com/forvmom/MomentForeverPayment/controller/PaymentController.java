@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/admin")
+@RequestMapping
 @Tag(name = "Payment", description = "UI-facing payment APIs")
 public class PaymentController {
 
