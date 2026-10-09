@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
  * Controller specifically for handling incoming Webhooks from Stripe.
  */
 @RestController
-@RequestMapping("/api/webhooks/stripe")
+@RequestMapping("/webhooks/stripe")
 public class StripeWebhookController {
 
     private static final Logger log = LoggerFactory.getLogger(StripeWebhookController.class);

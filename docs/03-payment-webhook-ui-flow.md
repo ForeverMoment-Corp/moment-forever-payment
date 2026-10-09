@@ -122,7 +122,7 @@ sequenceDiagram
 With the configured context path, Stripe calls:
 
 ```text
-POST /payment/api/webhooks/stripe
+POST /payment/webhooks/stripe
 Stripe-Signature: <Stripe signature>
 ```
 

@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
  * same idempotent payment-status update pipeline.
  */
 @RestController
-@RequestMapping("/api/webhooks/razorpay")
+@RequestMapping("/webhooks/razorpay")
 public class RazorpayWebhookController {
 
     private static final Logger log = LoggerFactory.getLogger(RazorpayWebhookController.class);

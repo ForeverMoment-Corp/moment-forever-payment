@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
-@RequestMapping
+@RequestMapping("/bookings")
 @Tag(name = "Payment", description = "UI-facing payment APIs")
 public class PaymentController {
 
@@ -20,7 +20,7 @@ public class PaymentController {
         this.paymentQueryService = paymentQueryService;
     }
 
-    @GetMapping("/bookings/{bookingId}/payment-link")
+    @GetMapping("/{bookingId}/payment-link")
     @Operation(summary = "Get latest payment link URL for a booking. " +
             "UI polls this after creating a booking until Stripe/Razorpay session is ready.")
     public ResponseEntity<?> getPaymentLink(@PathVariable String bookingId) {

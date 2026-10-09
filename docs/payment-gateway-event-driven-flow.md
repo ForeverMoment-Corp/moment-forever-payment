@@ -21,7 +21,7 @@ The code is the source of truth because the repository `README.md` contains only
 | Stripe result | Currently generates a mock `cs_test_<uuid>` and mock URL; the real API call is commented out | Persist the real Checkout Session ID and hosted Checkout URL |
 | Initiated event | `PAYMENT_INITIATED` with booking ID, URL, provider session ID, and provider | Also include a stable payment ID, event ID, producer, amount, currency, and schema version |
 | Initiated topic | Falls back to `payment-initiated-topic` because no YAML value is defined | Define `kafka.topics.payment-initiated` explicitly in every environment |
-| Webhook endpoint | `POST /payment/api/webhooks/stripe` | Expose this endpoint through HTTPS and restrict operational access appropriately |
+| Webhook endpoint | `POST /payment/webhooks/stripe` | Expose this endpoint through HTTPS and restrict operational access appropriately |
 | Webhook signature | Verification code is present but commented out; raw JSON is parsed | Always use `Webhook.constructEvent(payload, signature, secret)` |
 | Webhook events | Handles `checkout.session.completed` and `checkout.session.expired` | Also decide how to handle asynchronous payment methods and delayed failures |
 | Payment completion | Correlates by `provider_session_id`, changes status, writes an outgoing outbox row | Verify payment status, amount, currency, and provider object before confirming |
@@ -609,10 +609,10 @@ The success page should say something like "We are confirming your payment" and 
 
 ### Endpoint in this repository
 
-With server context path `/payment` and controller mapping `/api/webhooks/stripe`, the endpoint is:
+With server context path `/payment` and controller mapping `/webhooks/stripe`, the endpoint is:
 
 ```text
-POST /payment/api/webhooks/stripe
+POST /payment/webhooks/stripe
 ```
 
 It handles:
@@ -1198,7 +1198,7 @@ Include:
 - Stripe CLI forwarding in non-production:
 
 ```text
-stripe listen --forward-to localhost:8083/payment/api/webhooks/stripe
+stripe listen --forward-to localhost:8083/payment/webhooks/stripe
 ```
 
 Use fake/test keys only. Do not place real secrets in examples or commits.

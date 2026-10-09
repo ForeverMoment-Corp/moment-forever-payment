@@ -18,7 +18,7 @@ public class SwaggerConfig {
 
     private static final String SECURITY_SCHEME_NAME = "bearerAuth";
 
-    @Value("${server.servlet.context-path:/api/payment}")
+    @Value("${server.servlet.context-path:/payment}")
     private String contextPath;
 
     // ✅ Group Payment APIs (Admin & Public)
@@ -54,8 +54,11 @@ public class SwaggerConfig {
     public OpenAPI customOpenAPI() {
         return new OpenAPI()
                 .info(apiInfo())
-                // Set the server URL with context path
-                .addServersItem(new Server().url("/api/payment"))
+                // Both entry points: direct (:8083, context-path /payment) and
+                // via gateway (:8086, prefix /api/payment). A single static
+                // relative URL cannot satisfy both, so list both servers.
+                .addServersItem(new Server().url("/api/payment").description("Via API Gateway"))
+                .addServersItem(new Server().url("/payment").description("Direct to payment-service"))
                 .addSecurityItem(new SecurityRequirement().addList(SECURITY_SCHEME_NAME))
                 .components(new Components()
                         .addSecuritySchemes(SECURITY_SCHEME_NAME, createSecurityScheme()));
@@ -102,7 +105,7 @@ public class SwaggerConfig {
                     3. Result is published back to Kafka
                     4. Outbox pattern ensures reliability
                     
-                    **Base URL:** `/api/payment`
+                    **Base URL:** `/api/payment` via gateway, `/payment` direct
                     """)
                 .version("1.0.0")
                 .contact(new Contact()
