@@ -20,4 +20,6 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
             @Param("providerSessionId") String providerSessionId);
 
     Optional<Payment> findByTransactionId(String transactionId);
+
+    Optional<Payment> findFirstByBookingIdOrderByIdDesc(String bookingId);
 }

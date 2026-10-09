@@ -218,6 +218,8 @@ payment:
 
   # Gateway configuration (for real payment integration)
   gateway:
+    # Which provider handles a payment when the inbound event does not specify
+    # paymentType explicitly. Existing behaviour (Stripe) is unchanged.
     provider: stripe
     api-key: ${PAYMENT_GATEWAY_API_KEY:}
     webhook-secret: ${PAYMENT_GATEWAY_WEBHOOK_SECRET:}
@@ -225,6 +227,16 @@ payment:
     cancel-url: ${PAYMENT_CANCEL_URL:http://localhost:8082/payment/cancel}
     timeout-seconds: 30
     retry-attempts: 3
+
+    # Razorpay-specific settings, namespaced separately from Stripe's so both
+    # providers can be configured at the same time without clashing.
+    razorpay:
+      key-id: ${RAZORPAY_KEY_ID:}
+      key-secret: ${RAZORPAY_KEY_SECRET:}
+      webhook-secret: ${RAZORPAY_WEBHOOK_SECRET:}
+      # Razorpay Payment Links redirect here after a successful payment
+      # (equivalent role to Stripe's success-url above).
+      callback-url: ${RAZORPAY_CALLBACK_URL:http://localhost:8082/payment/success}
 
 
 # ==========================================================

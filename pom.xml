@@ -136,6 +136,13 @@
 			<artifactId>stripe-java</artifactId>
 			<version>33.4.2</version>
 		</dependency>
+
+		<!-- Razorpay SDK: second payment provider, added alongside Stripe. -->
+		<dependency>
+			<groupId>com.razorpay</groupId>
+			<artifactId>razorpay-java</artifactId>
+			<version>1.4.10</version>
+		</dependency>
 	</dependencies>
 
 	<dependencyManagement>
