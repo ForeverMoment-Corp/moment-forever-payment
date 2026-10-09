@@ -16,7 +16,7 @@ import java.util.Map;
  * Admin/Monitoring APIs only - not for core payment flow
  */
 @RestController
-@RequestMapping("/api/payments/admin")
+@RequestMapping("/admin")
 public class PaymentAdminController {
 
     private final PaymentOutboxDao paymentOutboxDao;
