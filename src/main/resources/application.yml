@@ -233,7 +233,7 @@ payment:
     razorpay:
       key-id: ${RAZORPAY_KEY_ID:}
       key-secret: ${RAZORPAY_KEY_SECRET:}
-      webhook-secret: ${RAZORPAY_WEBHOOK_SECRET:}
+      webhook-secret: ${RAZORPAY_WEBHOOK_SECRET:M@Nishind123}
       # Razorpay Payment Links redirect here after a successful payment
       # (equivalent role to Stripe's success-url above).
       callback-url: ${RAZORPAY_CALLBACK_URL:http://localhost:8082/payment/success}
