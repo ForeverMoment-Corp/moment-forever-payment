@@ -231,8 +231,8 @@ payment:
     # Razorpay-specific settings, namespaced separately from Stripe's so both
     # providers can be configured at the same time without clashing.
     razorpay:
-      key-id: ${RAZORPAY_KEY_ID:}
-      key-secret: ${RAZORPAY_KEY_SECRET:}
+      key-id: ${RAZORPAY_KEY_ID:rzp_test_TlMCDkiCp0BTPT}
+      key-secret: ${RAZORPAY_KEY_SECRET:HPJlffY11VB9B0fynFlIcrNq}
       webhook-secret: ${RAZORPAY_WEBHOOK_SECRET:M@Nishind123}
       # Razorpay Payment Links redirect here after a successful payment
       # (equivalent role to Stripe's success-url above).

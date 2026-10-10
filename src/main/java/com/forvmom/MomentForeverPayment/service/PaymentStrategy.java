@@ -16,11 +16,20 @@ public interface PaymentStrategy {
      * @return Payment entity populated with the provider's session ID and payment URL.
      */
     Payment initiatePayment(InboundPaymentEvent inboundPaymentEvent);
-    
+
     /**
      * Declares the payment provider this strategy supports.
-     * 
+     *
+     * @return provider enum (e.g., {@code PaymentProvider.STRIPE}).
+     */
+    PaymentProvider getProvider();
+
+    /**
+     * Declares the payment provider this strategy supports.
+     *
      * @return Provider identifier (e.g., "STRIPE").
      */
-    String getSupportedPaymentType();
+    default String getSupportedPaymentType() {
+        return getProvider().name();
+    }
 }

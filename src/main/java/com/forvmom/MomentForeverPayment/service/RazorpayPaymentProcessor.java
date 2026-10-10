@@ -103,7 +103,7 @@ public class RazorpayPaymentProcessor implements PaymentStrategy {
     }
 
     @Override
-    public String getSupportedPaymentType() {
-        return "RAZORPAY";
+    public PaymentProvider getProvider() {
+        return PaymentProvider.RAZORPAY;
     }
 }

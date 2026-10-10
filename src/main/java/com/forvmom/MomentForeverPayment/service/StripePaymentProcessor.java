@@ -25,7 +25,7 @@ public class StripePaymentProcessor implements PaymentStrategy {
 
     private static final Logger log = LoggerFactory.getLogger(StripePaymentProcessor.class);
 
-    @Value("${payment.gateway.api-key:}")
+    @Value("${payment.gateway.api-key}")
     private String stripeApiKey;
 
     @Value("${payment.gateway.success-url:http://localhost:8082/payment/success?session_id={CHECKOUT_SESSION_ID}}")
@@ -96,7 +96,7 @@ public class StripePaymentProcessor implements PaymentStrategy {
     }
 
     @Override
-    public String getSupportedPaymentType() {
-        return "STRIPE";
+    public PaymentProvider getProvider() {
+        return PaymentProvider.STRIPE;
     }
 }

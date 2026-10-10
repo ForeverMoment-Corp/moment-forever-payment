@@ -12,6 +12,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -45,12 +46,53 @@ class PaymentEventContractTests {
     @Test
     void missingPaymentTypeUsesConfiguredGateway() {
         PaymentStrategy stripe = mock(PaymentStrategy.class);
-        when(stripe.getSupportedPaymentType()).thenReturn("STRIPE");
+        when(stripe.getProvider()).thenReturn(PaymentProvider.STRIPE);
+        PaymentStrategy razorpay = mock(PaymentStrategy.class);
+        when(razorpay.getProvider()).thenReturn(PaymentProvider.RAZORPAY);
+
+        PaymentProcessorRegistry registry =
+                new PaymentProcessorRegistry(List.of(stripe, razorpay), "stripe");
+
+        assertSame(stripe, registry.getPaymentTypeProcessor(null));
+        assertSame(stripe, registry.getPaymentTypeProcessor(""));
+        assertSame(razorpay, registry.getPaymentTypeProcessor("RAZORPAY"));
+        assertSame(razorpay, registry.getPaymentTypeProcessor("razorpay"));
+    }
+
+    @Test
+    void configuredDefaultSelectsRazorpay() {
+        PaymentStrategy stripe = mock(PaymentStrategy.class);
+        when(stripe.getProvider()).thenReturn(PaymentProvider.STRIPE);
+        PaymentStrategy razorpay = mock(PaymentStrategy.class);
+        when(razorpay.getProvider()).thenReturn(PaymentProvider.RAZORPAY);
+
+        PaymentProcessorRegistry registry =
+                new PaymentProcessorRegistry(List.of(stripe, razorpay), "RAZORPAY");
+
+        assertSame(razorpay, registry.getPaymentTypeProcessor(null));
+        assertSame(PaymentProvider.RAZORPAY, registry.getDefaultProvider());
+    }
+
+    @Test
+    void unknownProviderIsRejected() {
+        PaymentStrategy stripe = mock(PaymentStrategy.class);
+        when(stripe.getProvider()).thenReturn(PaymentProvider.STRIPE);
 
         PaymentProcessorRegistry registry =
                 new PaymentProcessorRegistry(List.of(stripe), "stripe");
 
-        assertSame(stripe, registry.getPaymentTypeProcessor(null));
-        assertSame(stripe, registry.getPaymentTypeProcessor(""));
+        assertThrows(IllegalArgumentException.class,
+                () -> registry.getPaymentTypeProcessor("PAYPAL"));
+        assertThrows(IllegalArgumentException.class,
+                () -> new PaymentProcessorRegistry(List.of(stripe), "PAYPAL"));
+    }
+
+    @Test
+    void providerNameParsingIsCaseInsensitive() {
+        assertEquals(PaymentProvider.STRIPE, PaymentProvider.from("stripe"));
+        assertEquals(PaymentProvider.RAZORPAY, PaymentProvider.from(" Razorpay "));
+        assertThrows(IllegalArgumentException.class, () -> PaymentProvider.from(null));
+        assertThrows(IllegalArgumentException.class, () -> PaymentProvider.from("  "));
+        assertThrows(IllegalArgumentException.class, () -> PaymentProvider.from("PAYPAL"));
     }
 }

@@ -82,6 +82,8 @@ public class PaymentProcessService {
      */
     public OutgoingPaymentOutbox executePaymentTransaction(PaymentOutbox outbox, InboundPaymentEvent inboundPaymentEvent) {
         PaymentStrategy paymentStrategy = paymentProcessorRegistry.getPaymentTypeProcessor(inboundPaymentEvent.getPaymentType());
+        log.info("Selected payment provider {} for bookingId={}",
+                paymentStrategy.getProvider(), inboundPaymentEvent.getBookingId());
         Payment paymentResult = paymentStrategy.initiatePayment(inboundPaymentEvent);
         return paymentTransactionService.persistPaymentResult(outbox, inboundPaymentEvent, paymentResult);
     }
