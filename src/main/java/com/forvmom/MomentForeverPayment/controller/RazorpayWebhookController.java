@@ -96,6 +96,7 @@ public class RazorpayWebhookController {
                 break;
             case "payment_link.expired":
             case "payment_link.cancelled":
+            case "payment.failed":
                 log.info("Processing {} Razorpay payment link: {}", eventType, paymentLinkId);
                 outgoingRecord = webhookProcessingService.processWebhookAtomically(
                         "RAZORPAY", webhookEventId, paymentLinkId, transactionId, PaymentStatus.FAILED);
