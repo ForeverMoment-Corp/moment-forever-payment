@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 /**
  * Service dedicated to interacting with the Stripe API.
@@ -60,7 +61,13 @@ public class StripePaymentProcessor implements PaymentStrategy {
                     .setPriceData(
                             SessionCreateParams.LineItem.PriceData.builder()
                                     .setCurrency(payment.getCurrency() != null ? payment.getCurrency().toLowerCase() : "usd")
-                                    .setUnitAmount(payment.getAmount() != null ? payment.getAmount().multiply(new BigDecimal(100)).longValue() : 5000L)
+                                    // Stripe unit_amount is also in the smallest currency sub-unit (cents for
+                                    // USD). Round instead of truncate, for the same reason as Razorpay's
+                                    // amountInSubUnits (see RazorpayPaymentProcessor) — avoids under-charging
+                                    // by a fractional cent.
+                                    .setUnitAmount(payment.getAmount() != null
+                                            ? payment.getAmount().multiply(new BigDecimal(100)).setScale(0, RoundingMode.HALF_UP).longValueExact()
+                                            : 5000L)
                                     .setProductData(
                                             SessionCreateParams.LineItem.PriceData.ProductData.builder()
                                                     .setName("Booking " + payment.getBookingId())

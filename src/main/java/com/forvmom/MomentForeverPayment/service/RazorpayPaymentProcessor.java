@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 /**
  * Service dedicated to interacting with the Razorpay API.
@@ -63,8 +64,11 @@ public class RazorpayPaymentProcessor implements PaymentStrategy {
             // merchant accounts); default to INR when the event didn't carry a currency.
             String currency = payment.getCurrency() != null ? payment.getCurrency().toUpperCase() : "INR";
             // Razorpay amounts are expressed in the smallest currency sub-unit (e.g. paise for INR).
+            // Round (not truncate) to the nearest sub-unit: a plain .longValue() silently drops
+            // any fractional paise (e.g. 149.995 -> 14999 instead of 15000), which would make the
+            // amount the customer is charged a few paise less than the quoted price.
             long amountInSubUnits = payment.getAmount() != null
-                    ? payment.getAmount().multiply(new BigDecimal(100)).longValue()
+                    ? payment.getAmount().multiply(new BigDecimal(100)).setScale(0, RoundingMode.HALF_UP).longValueExact()
                     : 5000L;
 
             JSONObject paymentLinkRequest = new JSONObject();
