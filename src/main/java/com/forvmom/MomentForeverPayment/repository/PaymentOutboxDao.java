@@ -15,6 +15,8 @@ public interface PaymentOutboxDao extends JpaRepository<PaymentOutbox, Long> {
 
     Optional<PaymentOutbox> findByProducerAndEventId(String producer, String eventId);
 
+    Optional<PaymentOutbox> findFirstByEventId(String eventId);
+
     List<PaymentOutbox> findByStatusInAndUpdatedAtBefore(List<String> statuses, LocalDateTime cutoff);
 
     @Modifying

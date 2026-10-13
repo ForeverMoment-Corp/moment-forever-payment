@@ -57,6 +57,10 @@ public class PaymentRequestedEvent implements InboundPaymentEvent {
         return paymentType;
     }
 
+    public void setPaymentType(String paymentType) {
+        this.paymentType = paymentType;
+    }
+
     public void setEventType(String eventType) {
         this.eventType = eventType;
     }

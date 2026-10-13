@@ -86,6 +86,13 @@ public class RazorpayPaymentProcessor implements PaymentStrategy {
             // dashboard.
             JSONObject notes = new JSONObject();
             notes.put("eventId", inboundPaymentEvent.getEventId());
+            // payment.failed webhooks carry only payload.payment.entity (no payment_link).
+            // Stash booking correlation here so the webhook handler can map a bank
+            // decline back to the internal Payment without an extra Razorpay API call.
+            notes.put("bookingId", payment.getBookingId());
+            if (payment.getCorrelationId() != null) {
+                notes.put("correlationId", payment.getCorrelationId());
+            }
             paymentLinkRequest.put("notes", notes);
 
             PaymentLink paymentLink = razorpayClient.paymentLink.create(paymentLinkRequest);
