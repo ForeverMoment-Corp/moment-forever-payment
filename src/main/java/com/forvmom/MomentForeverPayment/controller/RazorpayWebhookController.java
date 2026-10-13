@@ -34,7 +34,7 @@ public class RazorpayWebhookController {
     private final OutgoingPaymentPublisher outgoingPaymentPublisher;
 
     public RazorpayWebhookController(WebhookProcessingService webhookProcessingService,
-                                      OutgoingPaymentPublisher outgoingPaymentPublisher) {
+                                     OutgoingPaymentPublisher outgoingPaymentPublisher) {
         this.webhookProcessingService = webhookProcessingService;
         this.outgoingPaymentPublisher = outgoingPaymentPublisher;
     }
@@ -46,6 +46,7 @@ public class RazorpayWebhookController {
             @RequestHeader("X-Razorpay-Signature") String signature,
             @RequestHeader(value = "X-Razorpay-Event-Id", required = false) String eventIdHeader) {
 
+        log.info("webhook is being called...");
         if (endpointSecret.isBlank()) {
             log.error("Razorpay webhook secret is not configured");
             return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
@@ -87,7 +88,7 @@ public class RazorpayWebhookController {
                 : paymentLinkId + ":" + eventType;
 
         OutgoingPaymentOutbox outgoingRecord = null;
-
+        log.debug("event type {}, PaymentLink Id {}", eventType, paymentLinkId);
         switch (eventType) {
             case "payment_link.paid":
                 log.info("Processing paid Razorpay payment link: {}", paymentLinkId);
